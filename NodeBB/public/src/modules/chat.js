@@ -258,6 +258,12 @@ define('chat', [
 		}
 	};
 
+	// TODO: see taskbar.js:44
+	module.closeByUUID = function (uuid) {
+		var chatModal = $('.chat-modal[data-uuid="' + uuid + '"]');
+		module.close(chatModal);
+	};
+
 	module.center = function (chatModal) {
 		var hideAfter = false;
 		if (chatModal.hasClass('hide')) {
@@ -291,6 +297,7 @@ define('chat', [
 
 	module.enableMobileBehaviour = function (modalEl) {
 		app.toggleNavbar(false);
+		taskbar.toggleVisibility(false);
 		modalEl.attr('data-mobile', '1');
 		var messagesEl = modalEl.find('.modal-body');
 		messagesEl.css('height', module.calculateChatListHeight(modalEl));
@@ -302,6 +309,7 @@ define('chat', [
 
 	module.disableMobileBehaviour = function () {
 		app.toggleNavbar(true);
+		taskbar.toggleVisibility(true);
 	};
 
 	module.calculateChatListHeight = function (modalEl) {
