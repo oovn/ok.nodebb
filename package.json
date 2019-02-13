@@ -2,7 +2,7 @@
   "name": "nodebb.xyz",
   "license": "GPL-3.0",
   "description": "NodeBB Forum",
-  "version": "1.11.1",
+  "version": "1.12.1",
   "homepage": "http://www.nodebb.org",
   "repository": {
     "type": "git",
@@ -16,10 +16,10 @@
     "ok": "./NodeBB/nodebb upgrade && node NodeBB/loader.js --no-daemon --no-silent"
   },
   "dependencies": {
-    "debug": "^3.1.0"
+    "debug": "^4.1.1"
   },
   "devDependencies": {
-    "nyc": "^11.4.1"
+    "nyc": "^13.2.0"
   },
   "bugs": {
     "url": "https://github.com/NodeBB/NodeBB/issues"
