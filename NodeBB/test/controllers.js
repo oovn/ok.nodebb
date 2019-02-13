@@ -1336,14 +1336,15 @@ describe('Controllers', function () {
 			});
 		});
 
-		it('should return 401 if privateUserInfo is turned on', function (done) {
-			meta.config.privateUserInfo = 1;
-			request(nconf.get('url') + '/api/user/foo', { json: true }, function (err, res, body) {
-				meta.config.privateUserInfo = 0;
+		it('should return 401 if user does not have view:users privilege', function (done) {
+			privileges.global.rescind(['view:users'], 'guests', function (err) {
 				assert.ifError(err);
-				assert.equal(res.statusCode, 401);
-				assert.equal(body, 'not-authorized');
-				done();
+				request(nconf.get('url') + '/api/user/foo', { json: true }, function (err, res, body) {
+					assert.ifError(err);
+					assert.equal(res.statusCode, 401);
+					assert.equal(body, 'not-authorized');
+					privileges.global.give(['view:users'], 'guests', done);
+				});
 			});
 		});
 
@@ -1807,11 +1808,18 @@ describe('Controllers', function () {
 			});
 		});
 
-		it('should load timeago locale', function (done) {
-			request(nconf.get('url') + '/assets/vendor/jquery/timeago/locales/jquery.timeago.404.js', function (err, res, body) {
+		it('should return not found if NodeBB language exists but timeago locale does not exist', function (done) {
+			request(nconf.get('url') + '/assets/vendor/jquery/timeago/locales/jquery.timeago.ms.js', function (err, res, body) {
 				assert.ifError(err);
-				assert.equal(res.statusCode, 200);
-				assert(body.includes('English'));
+				assert.equal(res.statusCode, 404);
+				done();
+			});
+		});
+
+		it('should return not found if NodeBB language does not exist', function (done) {
+			request(nconf.get('url') + '/assets/vendor/jquery/timeago/locales/jquery.timeago.muggle.js', function (err, res, body) {
+				assert.ifError(err);
+				assert.equal(res.statusCode, 404);
 				done();
 			});
 		});

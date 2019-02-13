@@ -46,6 +46,7 @@ function modRoutes(app, middleware, controllers) {
 
 function globalModRoutes(app, middleware, controllers) {
 	setupPageRoute(app, '/ip-blacklist', middleware, [], controllers.globalMods.ipBlacklist);
+	setupPageRoute(app, '/registration-queue', middleware, [], controllers.globalMods.registrationQueue);
 }
 
 function topicRoutes(app, middleware, controllers) {
@@ -76,13 +77,13 @@ function categoryRoutes(app, middleware, controllers) {
 }
 
 function userRoutes(app, middleware, controllers) {
-	var middlewares = [middleware.checkGlobalPrivacySettings];
+	var middlewares = [middleware.canViewUsers];
 
 	setupPageRoute(app, '/users', middleware, middlewares, controllers.users.index);
 }
 
 function groupRoutes(app, middleware, controllers) {
-	var middlewares = [middleware.checkGlobalPrivacySettings];
+	var middlewares = [middleware.canViewGroups];
 
 	setupPageRoute(app, '/groups', middleware, middlewares, controllers.groups.list);
 	setupPageRoute(app, '/groups/:slug', middleware, middlewares, controllers.groups.details);
@@ -187,7 +188,6 @@ function addCoreRoutes(app, router, middleware, callback) {
 		res.redirect(relativePath + '/assets/client.css?' + meta.config['cache-buster']);
 	});
 
-	app.use(relativePath + '/assets/vendor/jquery/timeago/locales', middleware.processTimeagoLocales);
 	app.use(controllers['404'].handle404);
 	app.use(controllers.errors.handleURIErrors);
 	app.use(controllers.errors.handleErrors);

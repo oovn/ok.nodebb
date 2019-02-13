@@ -84,19 +84,34 @@ module.exports = function (Plugins) {
 
 	Plugins.fireHook = function (hook, params, callback) {
 		callback = typeof callback === 'function' ? callback : function () {};
-
+		function done(err, result) {
+			if (err) {
+				return callback(err);
+			}
+			if (hook !== 'action:plugins.firehook') {
+				Plugins.fireHook('action:plugins.firehook', { hook: hook, params: params });
+			}
+			if (result !== undefined) {
+				callback(null, result);
+			} else {
+				callback();
+			}
+		}
 		var hookList = Plugins.loadedHooks[hook];
 		var hookType = hook.split(':')[0];
 		winston.verbose('[plugins/fireHook]', hook);
 		switch (hookType) {
 		case 'filter':
-			fireFilterHook(hook, hookList, params, callback);
+			fireFilterHook(hook, hookList, params, done);
 			break;
 		case 'action':
-			fireActionHook(hook, hookList, params, callback);
+			fireActionHook(hook, hookList, params, done);
 			break;
 		case 'static':
-			fireStaticHook(hook, hookList, params, callback);
+			fireStaticHook(hook, hookList, params, done);
+			break;
+		case 'response':
+			fireResponseHook(hook, hookList, params, done);
 			break;
 		default:
 			winston.warn('[plugins] Unknown hookType: ' + hookType + ', hook : ' + hook);
@@ -169,6 +184,28 @@ module.exports = function (Plugins) {
 			} else {
 				next();
 			}
+		}, callback);
+	}
+
+	function fireResponseHook(hook, hookList, params, callback) {
+		if (!Array.isArray(hookList) || !hookList.length) {
+			return callback();
+		}
+		async.eachSeries(hookList, function (hookObj, next) {
+			if (typeof hookObj.method !== 'function') {
+				if (global.env === 'development') {
+					winston.warn('[plugins] Expected method for hook \'' + hook + '\' in plugin \'' + hookObj.id + '\' not found, skipping.');
+				}
+				return next();
+			}
+
+			// Skip remaining hooks if headers have been sent
+			if (params.res.headersSent) {
+				return next();
+			}
+
+			hookObj.method(params);
+			next();
 		}, callback);
 	}
 
